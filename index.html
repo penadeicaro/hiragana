@@ -16,6 +16,9 @@
     --dim: #ccc5b5;
     --surface: #ede8de;
     --daku-surface: #e4dbd0;
+    --green: #2e7d32;
+    --green-light: #4caf50;
+    --orange: #e65100;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
@@ -109,11 +112,6 @@
     flex: 1; min-height: 0; overflow: hidden;
     display: flex; align-items: stretch;
   }
-  /* The grid takes full height; each col-group gets equal width.
-     Cells are sized by width (via aspect-ratio), so the grid height
-     must not exceed what the cells naturally produce. We let it scroll
-     vertically if needed but clip it. The key: use height:100% on grid
-     and let cells define their own square size from the column width. */
   .kana-grid {
     display: flex; flex-direction: row; gap: 2px;
     direction: rtl;
@@ -245,9 +243,8 @@
   .reveal-area {
     min-height: 90px; margin-top: 16px;
     display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
+    align-items: center; justify-content: center; gap: 14px;
   }
-  /* Romaji revelado — menor */
   .reveal-romaji {
     font-family: 'DM Mono', monospace;
     font-size: clamp(1.2rem, 3.5vw, 2.5rem);
@@ -256,6 +253,29 @@
     transition: all 0.3s ease;
   }
   .revealed .reveal-romaji { opacity: 1; transform: translateY(0); }
+
+  /* ====== ANSWER BUTTONS ====== */
+  .answer-btns {
+    display: flex; gap: 16px; opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.25s ease 0.1s;
+    pointer-events: none;
+  }
+  .revealed .answer-btns { opacity: 1; transform: translateY(0); pointer-events: all; }
+  .ans-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 8px 22px; border-radius: 3px; cursor: pointer;
+    transition: all 0.15s; border: 1.5px solid;
+  }
+  .ans-btn.wrong {
+    border-color: var(--red); color: var(--red); background: rgba(192,57,43,0.08);
+  }
+  .ans-btn.wrong:hover { background: rgba(192,57,43,0.22); }
+  .ans-btn.right {
+    border-color: var(--green-light); color: var(--green-light); background: rgba(76,175,80,0.08);
+  }
+  .ans-btn.right:hover { background: rgba(76,175,80,0.22); }
 
   .click-sub {
     font-family: 'DM Mono', monospace; font-size: 0.5rem;
@@ -332,6 +352,116 @@
   }
   .qs-action-btn:hover { border-color: rgba(255,255,255,0.5); color: rgba(255,255,255,0.8); }
 
+  /* ====== SRS SCORE PANEL (RIGHT SIDEBAR) ====== */
+  .srs-panel {
+    flex: 0 0 0; width: 0; overflow: hidden;
+    display: flex; flex-direction: column;
+    background: rgba(0,0,0,0.5);
+    border-left: 1px solid rgba(255,255,255,0.06);
+    padding: 0; transition: all 0.22s ease;
+  }
+  .srs-panel.open {
+    flex: 0 0 220px; width: 220px;
+    padding: 14px 12px 12px;
+    overflow-y: auto;
+  }
+  .srs-panel::-webkit-scrollbar { width: 3px; }
+  .srs-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
+  .srs-title {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: rgba(255,255,255,0.3); margin-bottom: 10px; flex-shrink: 0;
+  }
+
+  /* PROGRESS BAR */
+  .srs-progress-wrap {
+    flex-shrink: 0; margin-bottom: 14px;
+  }
+  .srs-progress-label {
+    font-family: 'DM Mono', monospace; font-size: 0.5rem;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(255,255,255,0.22); margin-bottom: 5px;
+    display: flex; justify-content: space-between;
+  }
+  .srs-progress-bar {
+    width: 100%; height: 6px; background: rgba(255,255,255,0.06);
+    border-radius: 3px; overflow: hidden;
+  }
+  .srs-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), #81c784);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .srs-progress-sub {
+    font-family: 'DM Mono', monospace; font-size: 0.44rem;
+    letter-spacing: 0.14em; color: rgba(255,255,255,0.16);
+    margin-top: 4px;
+  }
+
+  /* MASTERED NOTICE */
+  .srs-mastered-badge {
+    display: none; flex-direction: column; align-items: center;
+    gap: 4px; margin-bottom: 12px;
+    padding: 8px; background: rgba(46,125,50,0.15);
+    border: 1px solid rgba(76,175,80,0.3); border-radius: 4px;
+  }
+  .srs-mastered-badge.show { display: flex; }
+  .srs-mastered-badge span {
+    font-family: 'DM Mono', monospace; font-size: 0.52rem;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--green-light);
+  }
+
+  /* SRS ITEMS LIST */
+  .srs-sep {
+    height: 1px; background: rgba(255,255,255,0.05); margin: 8px 0; flex-shrink: 0;
+  }
+  .srs-section-label {
+    font-family: 'DM Mono', monospace; font-size: 0.46rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.18); margin-bottom: 5px; flex-shrink: 0;
+  }
+  .srs-list { display: flex; flex-direction: column; gap: 3px; }
+  .srs-item {
+    display: flex; align-items: center; gap: 6px;
+    padding: 4px 6px; border-radius: 3px;
+    background: rgba(255,255,255,0.03);
+    transition: background 0.15s;
+  }
+  .srs-item:hover { background: rgba(255,255,255,0.07); }
+  .srs-item-kana {
+    font-family: 'Noto Sans JP', sans-serif; font-size: 1.1rem;
+    color: white; line-height: 1; flex-shrink: 0; width: 24px; text-align: center;
+  }
+  .srs-item-info { flex: 1; min-width: 0; }
+  .srs-item-roma {
+    font-family: 'DM Mono', monospace; font-size: 0.5rem;
+    letter-spacing: 0.08em; color: rgba(255,255,255,0.35);
+  }
+  .srs-item-bar {
+    height: 3px; border-radius: 2px; margin-top: 3px;
+    transition: width 0.4s ease, background 0.4s ease;
+  }
+  .srs-item-count {
+    font-family: 'DM Mono', monospace; font-size: 0.48rem;
+    letter-spacing: 0.05em; flex-shrink: 0;
+    min-width: 16px; text-align: right;
+  }
+
+  /* flame / ice icons for difficulty */
+  .srs-item.hot .srs-item-kana { color: #ff8a65; }
+  .srs-item.hot .srs-item-bar { background: #e64a19; }
+  .srs-item.warm .srs-item-kana { color: #ffcc80; }
+  .srs-item.warm .srs-item-bar { background: var(--gold); }
+  .srs-item.cool .srs-item-kana { color: #81c784; }
+  .srs-item.cool .srs-item-bar { background: var(--green); }
+  .srs-item.hot .srs-item-count { color: #ff8a65; }
+  .srs-item.warm .srs-item-count { color: var(--gold); }
+  .srs-item.cool .srs-item-count { color: #81c784; }
+
+  /* SRS TOGGLE BUTTON in qbar */
+  .q-btn.srs-toggle { }
+
   /* ====== WORD QUIZ ====== */
   .word-display {
     font-family: 'Noto Sans JP', sans-serif;
@@ -358,15 +488,15 @@
     font-size: clamp(1rem, 2vw, 1.4rem); color: rgba(255,255,255,0.52);
     opacity: 0; transform: translateY(6px); transition: all 0.3s ease 0.15s; margin-top: 10px;
   }
-  .word-category {
-    font-family: 'DM Mono', monospace; font-size: 0.52rem;
-    letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold);
-    opacity: 0; transform: translateY(4px); transition: all 0.3s ease 0.22s; margin-top: 7px;
+  .word-ans-btns {
+    display: flex; gap: 16px; margin-top: 14px;
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.25s ease 0.2s; pointer-events: none;
   }
   .word-revealed .word-reading, .word-revealed .word-romaji,
-  .word-revealed .word-meaning, .word-revealed .word-category {
-    opacity: 1; transform: translateY(0);
-  }
+  .word-revealed .word-meaning { opacity: 1; transform: translateY(0); }
+  .word-revealed .word-ans-btns { opacity: 1; transform: translateY(0); pointer-events: all; }
+
   .sound-waves {
     display: flex; gap: 3px; align-items: flex-end; height: 16px;
     opacity: 0; transition: opacity 0.25s;
@@ -395,31 +525,6 @@
   }
 
   /* ====== FILTER PANEL ====== */
-  .filter-panel {
-    display: none; flex-shrink: 0;
-    padding: 10px 18px 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
-    background: rgba(0,0,0,0.35);
-    flex-direction: column; gap: 8px;
-  }
-  .filter-panel.open { display: flex; animation: slideDown 0.18s ease; }
-  @keyframes slideDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-  .filter-label {
-    font-family: 'DM Mono', monospace; font-size: 0.48rem;
-    letter-spacing: 0.28em; text-transform: uppercase;
-    color: rgba(255,255,255,0.22);
-  }
-  .filter-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .chip {
-    font-family: 'DM Mono', monospace; font-size: 0.54rem;
-    letter-spacing: 0.08em; padding: 4px 11px;
-    border: 1px solid rgba(255,255,255,0.15); border-radius: 20px;
-    color: rgba(255,255,255,0.32); cursor: pointer;
-    transition: all 0.15s; user-select: none;
-  }
-  .chip:hover { border-color: rgba(255,255,255,0.38); color: rgba(255,255,255,0.65); }
-  .chip.active { border-color: var(--gold); color: var(--gold); background: rgba(184,134,11,0.1); }
-  .filter-actions { display: flex; gap: 8px; align-items: center; margin-top: 2px; }
   .filter-apply {
     font-family: 'DM Mono', monospace; font-size: 0.54rem;
     letter-spacing: 0.18em; text-transform: uppercase;
@@ -427,18 +532,92 @@
     color: white; cursor: pointer; border-radius: 2px; transition: background 0.15s;
   }
   .filter-apply:hover { background: #8b0000; }
-  .filter-all {
-    font-family: 'DM Mono', monospace; font-size: 0.5rem;
-    letter-spacing: 0.14em; text-transform: uppercase;
-    padding: 5px 12px; background: none;
-    border: 1px solid rgba(255,255,255,0.12);
-    color: rgba(255,255,255,0.28); cursor: pointer; border-radius: 2px;
-    transition: all 0.15s;
+
+  /* ====== FEEDBACK FLASH ====== */
+  .feedback-flash {
+    position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    opacity: 0; transition: opacity 0.12s;
   }
-  .filter-all:hover { color: rgba(255,255,255,0.6); border-color: rgba(255,255,255,0.3); }
+  .feedback-flash.wrong-flash { background: rgba(192,57,43,0.18); opacity: 1; animation: flashOut 0.45s ease forwards; }
+  .feedback-flash.right-flash { background: rgba(46,125,50,0.15); opacity: 1; animation: flashOut 0.45s ease forwards; }
+  @keyframes flashOut { 0%{opacity:1} 100%{opacity:0} }
+
+  /* ====== SESSION STATS TOAST ====== */
+  .session-toast {
+    position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px; padding: 10px 20px;
+    font-family: 'DM Mono', monospace; font-size: 0.55rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    display: flex; gap: 18px; z-index: 150;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none;
+  }
+  .session-toast.show { opacity: 1; }
+  .st-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .st-val { font-size: 1rem; color: white; font-family: 'Noto Sans JP', sans-serif; }
+  .st-label { font-size: 0.45rem; color: rgba(255,255,255,0.28); }
+
+  /* MASTERED CELEBRATION */
+  .mastered-overlay {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.85);
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px;
+  }
+  .mastered-overlay.show { display: flex; animation: fadeIn 0.4s ease; }
+  .mastered-jp { font-family: 'Noto Serif JP', serif; font-size: 4rem; color: var(--green-light); }
+  .mastered-msg { font-family: 'Crimson Pro', serif; font-style: italic; font-size: 1.4rem; color: rgba(255,255,255,0.65); }
+  .mastered-sub { font-family: 'DM Mono', monospace; font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.28); }
+  .mastered-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 10px 28px; border: 1.5px solid var(--green-light); background: none;
+    color: var(--green-light); cursor: pointer; border-radius: 3px; margin-top: 10px;
+    transition: all 0.2s;
+  }
+  .mastered-btn:hover { background: rgba(76,175,80,0.15); }
+
+  /* Reset button in SRS panel */
+  .srs-reset-btn {
+    font-family: 'DM Mono', monospace; font-size: 0.48rem;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 5px 10px; background: none;
+    border: 1px solid rgba(192,57,43,0.3); border-radius: 2px;
+    color: rgba(192,57,43,0.45); cursor: pointer;
+    transition: all 0.18s; width: 100%; margin-top: 10px; flex-shrink: 0;
+  }
+  .srs-reset-btn:hover { border-color: var(--red); color: var(--red-light); background: rgba(192,57,43,0.08); }
+  .srs-reset-confirm {
+    display: none; flex-direction: column; gap: 5px; margin-top: 8px; flex-shrink: 0;
+  }
+  .srs-reset-confirm.show { display: flex; }
+  .srs-reset-confirm-msg {
+    font-family: 'DM Mono', monospace; font-size: 0.46rem;
+    letter-spacing: 0.1em; color: rgba(255,255,255,0.35); text-align: center;
+  }
+  .srs-reset-confirm-row { display: flex; gap: 5px; }
+  .srs-reset-yes {
+    flex: 1; font-family: 'DM Mono', monospace; font-size: 0.48rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 5px; background: rgba(192,57,43,0.15);
+    border: 1px solid var(--red); border-radius: 2px;
+    color: var(--red-light); cursor: pointer; transition: all 0.15s;
+  }
+  .srs-reset-yes:hover { background: rgba(192,57,43,0.3); }
+  .srs-reset-no {
+    flex: 1; font-family: 'DM Mono', monospace; font-size: 0.48rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 5px; background: none;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 2px;
+    color: rgba(255,255,255,0.3); cursor: pointer; transition: all 0.15s;
+  }
+  .srs-reset-no:hover { border-color: rgba(255,255,255,0.4); color: rgba(255,255,255,0.6); }
 </style>
 </head>
 <body>
+
+<!-- FEEDBACK FLASH -->
+<div class="feedback-flash" id="feedbackFlash"></div>
 
 <!-- HOME -->
 <div id="screen-home">
@@ -448,16 +627,13 @@
   </div>
   <div class="divider"></div>
   <div class="home-body">
-    <!-- SIDEBAR FILTER -->
     <div class="sidebar-filter" id="sidebarFilter">
       <div class="sf-label">Grupos</div>
-      <!-- chips rendered by JS -->
       <div class="sf-actions" id="sfActions">
         <button class="sf-action-btn" onclick="selectAllSidebar()">Todos</button>
         <button class="sf-action-btn" onclick="selectNoneSidebar()">Nenhum</button>
       </div>
     </div>
-    <!-- TABLES AREA -->
     <div class="tables-area">
       <div class="table-label">Clique em qualquer hiragana para ouvir</div>
       <div class="table-section">
@@ -482,6 +658,7 @@
     <div class="qbar-left">
       <button class="q-btn on" id="btnShuffle" onclick="toggleShuffle()">Aleatório: ON</button>
       <button class="q-btn" id="btnFilterKana" onclick="toggleQuizSidebar()">Filtrar grupos</button>
+      <button class="q-btn srs-toggle" id="btnSrsKana" onclick="toggleSrsPanel('kana')">📊 Placar</button>
     </div>
     <div class="qbar-right">
       <button class="q-btn" onclick="closeQuiz('quiz')">✕ Fechar</button>
@@ -489,7 +666,7 @@
   </div>
 
   <div class="quiz-body">
-    <!-- SIDE FILTER PANEL -->
+    <!-- LEFT: filter -->
     <div class="quiz-sidebar" id="quizSidebar">
       <div class="qs-label">Grupos</div>
       <div class="qs-chips" id="quizSidebarChips"></div>
@@ -506,18 +683,51 @@
       <span class="kana-display" id="kanaChar" onclick="playKanaSound()">あ</span>
       <div class="reveal-area" id="kanaReveal">
         <div class="reveal-romaji" id="kanaRomaji"></div>
+        <div class="answer-btns">
+          <button class="ans-btn wrong" onclick="answerKana(false)">✗ Errei</button>
+          <button class="ans-btn right"  onclick="answerKana(true)">✓ Acertei</button>
+        </div>
       </div>
       <div class="click-sub">clique para ouvir &nbsp;·&nbsp; <span class="kbd">R</span> repetir</div>
+    </div>
+
+    <!-- RIGHT: SRS panel -->
+    <div class="srs-panel" id="srsPanelKana">
+      <div class="srs-title">Desempenho</div>
+      <div class="srs-progress-wrap">
+        <div class="srs-progress-label">
+          <span>Dominados</span>
+          <span id="kSrsProgressPct">0%</span>
+        </div>
+        <div class="srs-progress-bar"><div class="srs-progress-fill" id="kSrsProgressFill" style="width:0%"></div></div>
+        <div class="srs-progress-sub" id="kSrsProgressSub">0 de 0 hiraganas afiados</div>
+      </div>
+      <div class="srs-mastered-badge" id="kMasteredBadge">
+        <span>完璧</span><span>Todos dominados!</span>
+      </div>
+      <div class="srs-sep"></div>
+      <div class="srs-section-label" id="kHotLabel">Mais difíceis</div>
+      <div class="srs-list" id="kSrsList"></div>
+      <button class="srs-reset-btn" onclick="showResetConfirm('kana')">↺ Resetar progresso</button>
+      <div class="srs-reset-confirm" id="kResetConfirm">
+        <div class="srs-reset-confirm-msg">Apagar todos os dados?</div>
+        <div class="srs-reset-confirm-row">
+          <button class="srs-reset-yes" onclick="confirmReset('kana')">Sim</button>
+          <button class="srs-reset-no"  onclick="hideResetConfirm('kana')">Não</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="qbar-bot">
     <div class="hint-text">
-      <span class="kbd">espaço</span> revelar / próx &nbsp;
+      <span class="kbd">espaço</span> revelar &nbsp;
+      <span class="kbd">1</span> errei &nbsp;
+      <span class="kbd">2</span> acertei &nbsp;
       <span class="kbd">→</span> pular &nbsp;
       <span class="kbd">←</span> voltar
     </div>
-    <div class="q-score" id="kanaScore">total: 0</div>
+    <div class="q-score" id="kanaScore">↑ 0 &nbsp; ↓ 0</div>
   </div>
 </div>
 
@@ -533,6 +743,7 @@
     </div>
     <div class="qbar-left">
       <button class="q-btn" id="btnFilterWords" onclick="toggleWordSidebar()">Filtrar grupos</button>
+      <button class="q-btn srs-toggle" id="btnSrsWords" onclick="toggleSrsPanel('words')">📊 Placar</button>
     </div>
     <div class="qbar-right">
       <button class="q-btn" onclick="closeQuiz('words')">✕ Fechar</button>
@@ -540,7 +751,6 @@
   </div>
 
   <div class="quiz-body">
-    <!-- WORD SIDE FILTER PANEL -->
     <div class="quiz-sidebar" id="wordSidebar">
       <div class="qs-label">Grupos</div>
       <div class="qs-chips" id="wordSidebarChips"></div>
@@ -554,18 +764,15 @@
     </div>
 
     <div class="quiz-main">
-      <!-- Loading state -->
       <div id="wordLoading" style="display:none; flex-direction:column; align-items:center; gap:12px;">
         <div class="word-loading-spinner"></div>
-        <div class="word-loading-text">Buscando palavras…</div>
+        <div class="word-loading-text" id="wordLoadingText">Carregando dicionário…</div>
       </div>
-      <!-- Empty state -->
       <div id="wordEmpty" style="display:none; flex-direction:column; align-items:center; gap:10px; text-align:center; padding:20px;">
         <div style="font-family:'Noto Sans JP',sans-serif; font-size:3rem; color:rgba(255,255,255,0.15);">言葉</div>
-        <div style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; color:rgba(255,255,255,0.25); text-transform:uppercase;">Nenhuma palavra encontrada</div>
+        <div id="wordEmptyMsg" style="font-family:'DM Mono',monospace; font-size:0.6rem; letter-spacing:0.2em; color:rgba(255,255,255,0.25); text-transform:uppercase;">Nenhuma palavra encontrada</div>
         <div style="font-family:'Crimson Pro',serif; font-style:italic; font-size:0.9rem; color:rgba(255,255,255,0.2); margin-top:4px;">Ative mais grupos para encontrar palavras.</div>
       </div>
-      <!-- Word display -->
       <div id="wordContent">
         <div class="word-display" id="wordKana" onclick="playWordSound()"></div>
         <div class="click-sub">clique para ouvir</div>
@@ -573,6 +780,34 @@
           <div class="word-reading" id="wordReading"></div>
           <div class="word-romaji" id="wordRomaji"></div>
           <div class="word-meaning" id="wordMeaning"></div>
+          <div class="word-ans-btns">
+            <button class="ans-btn wrong" onclick="answerWord(false)">✗ Errei</button>
+            <button class="ans-btn right"  onclick="answerWord(true)">✓ Acertei</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SRS panel words -->
+    <div class="srs-panel" id="srsPanelWords">
+      <div class="srs-title">Desempenho</div>
+      <div class="srs-progress-wrap">
+        <div class="srs-progress-label">
+          <span>Dominadas</span>
+          <span id="wSrsProgressPct">0%</span>
+        </div>
+        <div class="srs-progress-bar"><div class="srs-progress-fill" id="wSrsProgressFill" style="width:0%"></div></div>
+        <div class="srs-progress-sub" id="wSrsProgressSub">0 de 0 palavras afiadas</div>
+      </div>
+      <div class="srs-sep"></div>
+      <div class="srs-section-label">Mais difíceis</div>
+      <div class="srs-list" id="wSrsList"></div>
+      <button class="srs-reset-btn" onclick="showResetConfirm('words')">↺ Resetar progresso</button>
+      <div class="srs-reset-confirm" id="wResetConfirm">
+        <div class="srs-reset-confirm-msg">Apagar todos os dados?</div>
+        <div class="srs-reset-confirm-row">
+          <button class="srs-reset-yes" onclick="confirmReset('words')">Sim</button>
+          <button class="srs-reset-no"  onclick="hideResetConfirm('words')">Não</button>
         </div>
       </div>
     </div>
@@ -580,12 +815,22 @@
 
   <div class="qbar-bot">
     <div class="hint-text">
-      <span class="kbd">espaço</span> revelar / próx &nbsp;
+      <span class="kbd">espaço</span> revelar &nbsp;
+      <span class="kbd">1</span> errei &nbsp;
+      <span class="kbd">2</span> acertei &nbsp;
       <span class="kbd">→</span> pular &nbsp;
       <span class="kbd">←</span> voltar
     </div>
     <div class="q-score" id="wordScore"></div>
   </div>
+</div>
+
+<!-- MASTERED OVERLAY -->
+<div class="mastered-overlay" id="masteredOverlay">
+  <div class="mastered-jp">完璧</div>
+  <div class="mastered-msg">Todos os hiraganas dominados!</div>
+  <div class="mastered-sub">Você acertou cada um pelo menos 3 vezes seguidas.</div>
+  <button class="mastered-btn" onclick="closeMastered()">Continuar praticando</button>
 </div>
 
 <script>
@@ -709,7 +954,6 @@ function renderTable() {
   vc.innerHTML = `<div class="col-label"></div>`;
   ['a','i','u','e','o'].forEach(v => vc.innerHTML += `<div class="vowel-cell"><span>${v}</span></div>`);
   grid.appendChild(vc);
-
   buildSidebar();
   fitGrid();
   window.addEventListener('resize', fitGrid);
@@ -720,28 +964,18 @@ function fitGrid() {
   if (!wrapper) return;
   const W = wrapper.clientWidth;
   const H = wrapper.clientHeight;
-
-  // Count total col-group columns rendered (each COLS entry may have base + daku + handaku cols)
   const colGroups = document.querySelectorAll('#kanaGrid .col-group:not(.vowel-col)');
   const numCols = colGroups.length;
-  // Max rows: wa col has 6 (extra), most have 5
   const numRows = 6;
   const LABEL_H = 16;
   const GAP = 2;
-
-  // Available width per column (excluding vowel-col ~14px and gaps)
   const vowelW = 14;
-  const totalGaps = GAP * numCols; // gaps between cols
+  const totalGaps = GAP * numCols;
   const availW = W - vowelW - totalGaps;
   const cellFromW = availW / numCols;
-
-  // Available height per cell
   const availH = H - LABEL_H - GAP * (numRows - 1);
   const cellFromH = availH / numRows;
-
-  // Pick the smaller so cells fit both dimensions
   const cellSize = Math.floor(Math.min(cellFromW, cellFromH));
-
   document.querySelectorAll('#kanaGrid .h-cell').forEach(el => {
     el.style.width = cellSize + 'px';
     el.style.height = cellSize + 'px';
@@ -751,8 +985,6 @@ function fitGrid() {
     el.style.flex = 'none';
     el.style.width = cellSize + 'px';
   });
-
-  // Scale kana font relative to cell size
   const kanaSize = Math.round(cellSize * 0.52);
   const romaSize = Math.round(cellSize * 0.18);
   document.querySelectorAll('#kanaGrid .kana').forEach(el => el.style.fontSize = kanaSize + 'px');
@@ -762,7 +994,6 @@ function fitGrid() {
 function buildSidebar() {
   const sidebar = document.getElementById('sidebarFilter');
   const actions = document.getElementById('sfActions');
-  // Remove old chips (everything except the label and actions div)
   sidebar.querySelectorAll('.sf-chip').forEach(c => c.remove());
   KANA_GROUPS.forEach(g => {
     const el = document.createElement('div');
@@ -773,6 +1004,7 @@ function buildSidebar() {
       el.classList.toggle('active');
       if (el.classList.contains('active')) activeKanaGroups.add(g.id);
       else activeKanaGroups.delete(g.id);
+      saveSettings();
     };
     sidebar.insertBefore(el, actions);
   });
@@ -780,15 +1012,222 @@ function buildSidebar() {
 
 function selectAllSidebar() {
   document.querySelectorAll('#sidebarFilter .sf-chip').forEach(c => {
-    c.classList.add('active');
-    activeKanaGroups.add(c.dataset.id);
+    c.classList.add('active'); activeKanaGroups.add(c.dataset.id);
   });
+  saveSettings();
 }
 function selectNoneSidebar() {
   document.querySelectorAll('#sidebarFilter .sf-chip').forEach(c => {
-    c.classList.remove('active');
-    activeKanaGroups.delete(c.dataset.id);
+    c.classList.remove('active'); activeKanaGroups.delete(c.dataset.id);
   });
+  saveSettings();
+}
+
+// ============================================================
+// SRS ENGINE
+// ============================================================
+// Per-item stats: { correct: N, wrong: N, streak: N, weight: N }
+// Weight formula: starts at 1, +2 per wrong, -0.5 per correct (min 0.2)
+// "Mastered" = streak >= 3 AND weight <= 0.5
+// MASTERY_THRESHOLD for progress bar: streak >= 3
+
+const SRS_STORAGE_KEY = 'hiragana_srs_v1';
+const SRS_WORD_STORAGE_KEY = 'hiragana_word_srs_v1';
+const MASTERY_STREAK = 3;   // consecutive correct to "master"
+const MASTERY_WEIGHT = 1.0; // weight must be <= this to count as mastered
+
+let srsData = {};     // key = kana char, value = { correct, wrong, streak, weight }
+let srsWordData = {}; // key = word.k
+
+function loadSRS() {
+  try { srsData = JSON.parse(localStorage.getItem(SRS_STORAGE_KEY) || '{}'); } catch(e) { srsData = {}; }
+  try { srsWordData = JSON.parse(localStorage.getItem(SRS_WORD_STORAGE_KEY) || '{}'); } catch(e) { srsWordData = {}; }
+}
+function saveSRS() {
+  try { localStorage.setItem(SRS_STORAGE_KEY, JSON.stringify(srsData)); } catch(e) {}
+}
+function saveSRSWords() {
+  try { localStorage.setItem(SRS_WORD_STORAGE_KEY, JSON.stringify(srsWordData)); } catch(e) {}
+}
+
+function getSrsItem(key, isWord) {
+  const store = isWord ? srsWordData : srsData;
+  if (!store[key]) store[key] = { correct: 0, wrong: 0, streak: 0, weight: 1 };
+  return store[key];
+}
+
+function recordAnswer(key, correct, isWord) {
+  const item = getSrsItem(key, isWord);
+  if (correct) {
+    item.correct++;
+    item.streak++;
+    item.weight = Math.max(0.2, item.weight - 0.4);
+  } else {
+    item.wrong++;
+    item.streak = 0;
+    item.weight = Math.min(8, item.weight + 2);
+  }
+  if (isWord) saveSRSWords(); else saveSRS();
+}
+
+function isMastered(key, isWord) {
+  const item = getSrsItem(key, isWord);
+  return item.streak >= MASTERY_STREAK && item.weight <= MASTERY_WEIGHT;
+}
+
+// Weighted random pick from list
+function weightedPick(list, isWord) {
+  let total = 0;
+  const weights = list.map(it => {
+    const key = isWord ? it.k : it.k;
+    const s = getSrsItem(key, isWord);
+    return s.weight;
+  });
+  weights.forEach(w => total += w);
+  let r = Math.random() * total;
+  for (let i = 0; i < list.length; i++) {
+    r -= weights[i];
+    if (r <= 0) return i;
+  }
+  return list.length - 1;
+}
+
+// Build weighted queue: items with higher weight appear more
+function buildWeightedQueue(list, isWord, size) {
+  if (!list.length) return [];
+  const queue = [];
+  // Fill queue by picking ~size items, weighted
+  const seen = new Set();
+  let attempts = 0;
+  while (queue.length < size && attempts < size * 4) {
+    attempts++;
+    const idx = weightedPick(list, isWord);
+    const item = list[idx];
+    if (!seen.has(item.k) || queue.length < list.length) {
+      queue.push(item);
+      if (queue.length <= list.length) seen.add(item.k);
+    }
+  }
+  // Shuffle to avoid always starting with same item
+  return shuffle(queue);
+}
+
+// ============================================================
+// SRS PANEL RENDERING
+// ============================================================
+function updateKanaSrsPanel() {
+  const list = buildActiveKanaList();
+  const total = list.length;
+  const mastered = list.filter(it => isMastered(it.k, false)).length;
+  const pct = total > 0 ? Math.round(mastered / total * 100) : 0;
+
+  document.getElementById('kSrsProgressFill').style.width = pct + '%';
+  document.getElementById('kSrsProgressPct').textContent = pct + '%';
+  document.getElementById('kSrsProgressSub').textContent = `${mastered} de ${total} hiraganas afiados`;
+
+  const badge = document.getElementById('kMasteredBadge');
+  badge.classList.toggle('show', mastered === total && total > 0);
+
+  // Sort by weight desc, show top 12
+  const sorted = [...list].map(it => ({
+    ...it,
+    srs: getSrsItem(it.k, false)
+  })).filter(it => it.srs.wrong > 0 || it.srs.correct > 0)
+    .sort((a,b) => b.srs.weight - a.srs.weight)
+    .slice(0, 14);
+
+  const container = document.getElementById('kSrsList');
+  const label = document.getElementById('kHotLabel');
+  if (!sorted.length) {
+    container.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:0.48rem;letter-spacing:0.14em;color:rgba(255,255,255,0.18);text-transform:uppercase;padding:4px 0;">Nenhum dado ainda.<br>Responda ao quiz!</div>';
+    return;
+  }
+  label.textContent = `Mais difíceis (${sorted.length})`;
+
+  const maxWeight = sorted[0].srs.weight;
+  container.innerHTML = '';
+  sorted.forEach(it => {
+    const s = it.srs;
+    const cls = s.weight >= 3 ? 'hot' : s.weight >= 1.5 ? 'warm' : 'cool';
+    const barW = maxWeight > 0 ? Math.round(s.weight / maxWeight * 100) : 0;
+    const div = document.createElement('div');
+    div.className = `srs-item ${cls}`;
+    div.title = `Acertos: ${s.correct} | Erros: ${s.wrong} | Sequência: ${s.streak}`;
+    div.innerHTML = `
+      <div class="srs-item-kana">${it.k}</div>
+      <div class="srs-item-info">
+        <div class="srs-item-roma">${it.r}</div>
+        <div class="srs-item-bar" style="width:${barW}%"></div>
+      </div>
+      <div class="srs-item-count">${s.wrong}✗ ${s.correct}✓</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function updateWordSrsPanel() {
+  if (!wordQueue.length) return;
+  const total = wordQueue.length;
+  const mastered = wordQueue.filter(it => isMastered(it.k, true)).length;
+  const pct = total > 0 ? Math.round(mastered / total * 100) : 0;
+
+  document.getElementById('wSrsProgressFill').style.width = pct + '%';
+  document.getElementById('wSrsProgressPct').textContent = pct + '%';
+  document.getElementById('wSrsProgressSub').textContent = `${mastered} de ${total} palavras afiadas`;
+
+  const sorted = [...wordQueue].map(it => ({
+    ...it, srs: getSrsItem(it.k, true)
+  })).filter(it => it.srs.wrong > 0 || it.srs.correct > 0)
+    .sort((a,b) => b.srs.weight - a.srs.weight)
+    .slice(0, 14);
+
+  const container = document.getElementById('wSrsList');
+  if (!sorted.length) {
+    container.innerHTML = '<div style="font-family:DM Mono,monospace;font-size:0.48rem;letter-spacing:0.14em;color:rgba(255,255,255,0.18);text-transform:uppercase;padding:4px 0;">Nenhum dado ainda.<br>Responda ao quiz!</div>';
+    return;
+  }
+  const maxWeight = sorted[0].srs.weight;
+  container.innerHTML = '';
+  sorted.forEach(it => {
+    const s = it.srs;
+    const cls = s.weight >= 3 ? 'hot' : s.weight >= 1.5 ? 'warm' : 'cool';
+    const barW = maxWeight > 0 ? Math.round(s.weight / maxWeight * 100) : 0;
+    const div = document.createElement('div');
+    div.className = `srs-item ${cls}`;
+    div.title = `Acertos: ${s.correct} | Erros: ${s.wrong} | Sequência: ${s.streak}`;
+    div.innerHTML = `
+      <div class="srs-item-kana" style="font-size:0.85rem;width:auto;max-width:60px;overflow:hidden;text-overflow:ellipsis">${it.k}</div>
+      <div class="srs-item-info">
+        <div class="srs-item-roma" style="font-size:0.42rem;">${it.m.slice(0,18)}</div>
+        <div class="srs-item-bar" style="width:${barW}%"></div>
+      </div>
+      <div class="srs-item-count">${s.wrong}✗ ${s.correct}✓</div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ============================================================
+// SRS PANEL TOGGLE
+// ============================================================
+function toggleSrsPanel(type) {
+  const panel = document.getElementById(type === 'kana' ? 'srsPanelKana' : 'srsPanelWords');
+  const isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    if (type === 'kana') updateKanaSrsPanel();
+    else updateWordSrsPanel();
+  }
+}
+
+// ============================================================
+// FEEDBACK
+// ============================================================
+function flashFeedback(correct) {
+  const el = document.getElementById('feedbackFlash');
+  el.className = 'feedback-flash';
+  void el.offsetWidth;
+  el.className = `feedback-flash ${correct ? 'right-flash' : 'wrong-flash'}`;
 }
 
 // ============================================================
@@ -829,49 +1268,62 @@ const KANA_GROUPS = [
   { id:'handaku',  label:'゜ pa·pi·pu·pe·po' },
 ];
 
+const SETTINGS_KEY = 'hiragana_settings_v1';
+
+function saveSettings() {
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+      activeGroups: [...activeKanaGroups],
+      doShuffle
+    }));
+  } catch(e) {}
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (Array.isArray(s.activeGroups) && s.activeGroups.length) {
+      // Only keep valid group ids
+      const valid = new Set(KANA_GROUPS.map(g => g.id));
+      activeKanaGroups = new Set(s.activeGroups.filter(id => valid.has(id)));
+    }
+    if (typeof s.doShuffle === 'boolean') doShuffle = s.doShuffle;
+  } catch(e) {}
+}
+
 let activeKanaGroups = new Set(KANA_GROUPS.map(g => g.id));
 
-// Build the set of allowed hiragana characters from active groups
-// Vowels (あ行) are always included as base
 function buildAllowedKana() {
   const allowed = new Set();
   const colById = {};
   COLS.forEach(c => colById[c.id] = c);
-
-  // Always include vowels
   const aCol = colById['a'];
   aCol.base.forEach(i => { if(i) allowed.add(i.k); });
-
   ['ka','sa','ta','na','ha','ma','ya','ra','wa'].forEach(id => {
     if (!activeKanaGroups.has(id)) return;
     const col = colById[id];
     col.base.forEach(i => { if(i) allowed.add(i.k); });
     if (col.extra) col.extra.forEach(i => { if(i) allowed.add(i.k); });
   });
-
   const dakuMap = { 'daku_ka':'ka', 'daku_sa':'sa', 'daku_ta':'ta', 'daku_ha':'ha' };
   Object.entries(dakuMap).forEach(([gid, colId]) => {
     if (!activeKanaGroups.has(gid)) return;
     const col = colById[colId];
     if (col && col.daku) col.daku.forEach(i => { if(i) allowed.add(i.k); });
   });
-
   if (activeKanaGroups.has('handaku')) {
     const col = colById['ha'];
     if (col && col.handaku) col.handaku.forEach(i => { if(i) allowed.add(i.k); });
   }
-
-  // Also allow っ (small tsu) and ー (long vowel mark) as they appear in common words
   allowed.add('っ'); allowed.add('ー');
   return allowed;
 }
 
-// Check if a word uses only allowed kana
 function wordFitsGroups(reading, allowed) {
-  // Must be hiragana-only (no kanji)
   if (/[\u4e00-\u9fff\u30A0-\u30FF]/.test(reading)) return false;
   for (const ch of reading) {
-    // Skip small kana variants (ぁぃぅぇぉ), っ, ー — already in allowed
     if (!allowed.has(ch)) return false;
   }
   return true;
@@ -881,21 +1333,18 @@ function buildActiveKanaList() {
   const list = [];
   const colById = {};
   COLS.forEach(c => colById[c.id] = c);
-
   ['a','ka','sa','ta','na','ha','ma','ya','ra','wa'].forEach(id => {
     if (!activeKanaGroups.has(id)) return;
     const col = colById[id];
     col.base.forEach(i => { if(i) list.push(i); });
     if (col.extra) col.extra.forEach(i => { if(i) list.push(i); });
   });
-
   const dakuMap = { 'daku_ka':'ka', 'daku_sa':'sa', 'daku_ta':'ta', 'daku_ha':'ha' };
   Object.entries(dakuMap).forEach(([gid, colId]) => {
     if (!activeKanaGroups.has(gid)) return;
     const col = colById[colId];
     if (col && col.daku) col.daku.forEach(i => { if(i) list.push(i); });
   });
-
   if (activeKanaGroups.has('handaku')) {
     const col = colById['ha'];
     if (col && col.handaku) col.handaku.forEach(i => { if(i) list.push(i); });
@@ -904,57 +1353,52 @@ function buildActiveKanaList() {
 }
 
 // ============================================================
-// JISHO API — WORD FETCHING
+// JMDICT WORD FETCHING
 // ============================================================
-let wordCache = {}; // cache by group key to avoid redundant fetches
+let jmdictData = null;
+let jmdictLoading = null;
+let wordCache = {};
+
+async function loadJMdict() {
+  if (jmdictData) return jmdictData;
+  if (jmdictLoading) return jmdictLoading;
+  jmdictLoading = fetch('./jmdict-all-3.6.2.json')
+    .then(r => {
+      if (!r.ok) throw new Error('Não foi possível carregar jmdict-all-3.6.2.json');
+      return r.json();
+    })
+    .then(json => {
+      jmdictData = json.words;
+      return jmdictData;
+    });
+  return jmdictLoading;
+}
 
 async function fetchWordsForGroups() {
   const allowed = buildAllowedKana();
   const cacheKey = [...activeKanaGroups].sort().join(',');
   if (wordCache[cacheKey]) return wordCache[cacheKey];
-
+  let words;
+  try { words = await loadJMdict(); } catch(e) { console.error(e); return []; }
   const results = [];
   const seen = new Set();
-
-  // Fetch multiple pages of common Japanese words from Jisho
-  // We search for hiragana-only common words and filter client-side
-  const searches = ['#common #jlpt-n5', '#common #jlpt-n4', '#common #jlpt-n3'];
-
-  for (const tag of searches) {
-    for (let page = 1; page <= 3; page++) {
-      try {
-        const url = `https://jisho.org/api/v1/search/words?keyword=${encodeURIComponent(tag)}&page=${page}`;
-        const resp = await fetch(url);
-        if (!resp.ok) continue;
-        const data = await resp.json();
-        if (!data.data || !data.data.length) break;
-
-        for (const entry of data.data) {
-          for (const japanese of entry.japanese) {
-            const reading = japanese.reading || japanese.word;
-            if (!reading) continue;
-            if (seen.has(reading)) continue;
-            if (!wordFitsGroups(reading, allowed)) continue;
-            if (reading.length < 2 || reading.length > 6) continue;
-
-            // Get English meaning (first sense, first definition)
-            const sense = entry.senses?.[0];
-            if (!sense) continue;
-            const meaning = sense.english_definitions?.slice(0, 2).join(', ');
-            if (!meaning) continue;
-
-            seen.add(reading);
-            results.push({ k: reading, r: '', m: meaning });
-            if (results.length >= 120) break;
-          }
-          if (results.length >= 120) break;
-        }
-      } catch(e) { /* network error, skip */ }
-      if (results.length >= 120) break;
-    }
-    if (results.length >= 120) break;
+  for (const entry of words) {
+    if (!entry.kana || !entry.kana.length) continue;
+    const kanaEntry = entry.kana.find(k => k.common) || entry.kana[0];
+    const reading = kanaEntry.text;
+    if (!reading) continue;
+    if (seen.has(reading)) continue;
+    if (!wordFitsGroups(reading, allowed)) continue;
+    if (reading.length < 2 || reading.length > 6) continue;
+    const firstSense = entry.sense?.[0];
+    if (!firstSense) continue;
+    const engGlosses = firstSense.gloss?.filter(g => g.lang === 'eng')?.map(g => g.text);
+    if (!engGlosses || !engGlosses.length) continue;
+    const meaning = engGlosses.slice(0, 2).join(', ');
+    seen.add(reading);
+    results.push({ k: reading, r: '', m: meaning });
+    if (results.length >= 300) break;
   }
-
   wordCache[cacheKey] = results;
   return results;
 }
@@ -1002,33 +1446,27 @@ function buildWordSidebarChips() {
   });
 }
 
-function selectAllKana() {
-  document.querySelectorAll('#quizSidebarChips .qs-chip').forEach(c => c.classList.add('active'));
-}
-function selectNoneKana() {
-  document.querySelectorAll('#quizSidebarChips .qs-chip').forEach(c => c.classList.remove('active'));
-}
-function selectAllWordGroups() {
-  document.querySelectorAll('#wordSidebarChips .qs-chip').forEach(c => c.classList.add('active'));
-}
-function selectNoneWordGroups() {
-  document.querySelectorAll('#wordSidebarChips .qs-chip').forEach(c => c.classList.remove('active'));
-}
+function selectAllKana() { document.querySelectorAll('#quizSidebarChips .qs-chip').forEach(c => c.classList.add('active')); }
+function selectNoneKana() { document.querySelectorAll('#quizSidebarChips .qs-chip').forEach(c => c.classList.remove('active')); }
+function selectAllWordGroups() { document.querySelectorAll('#wordSidebarChips .qs-chip').forEach(c => c.classList.add('active')); }
+function selectNoneWordGroups() { document.querySelectorAll('#wordSidebarChips .qs-chip').forEach(c => c.classList.remove('active')); }
 
 function applyKanaFilter() {
   const chips = document.querySelectorAll('#quizSidebarChips .qs-chip');
   const sel = new Set([...chips].filter(c => c.classList.contains('active')).map(c => c.dataset.id));
   activeKanaGroups = sel.size ? sel : new Set(KANA_GROUPS.map(g => g.id));
+  saveSettings();
   document.getElementById('quizSidebar').classList.remove('open');
-  kanaQueue = doShuffle ? shuffle(buildActiveKanaList()) : buildActiveKanaList();
-  kanaIdx = 0; kanaRevealed = false;
+  rebuildKanaQueue();
   loadKana();
+  if (document.getElementById('srsPanelKana').classList.contains('open')) updateKanaSrsPanel();
 }
 
 async function applyWordGroupFilter() {
   const chips = document.querySelectorAll('#wordSidebarChips .qs-chip');
   const sel = new Set([...chips].filter(c => c.classList.contains('active')).map(c => c.dataset.id));
   activeKanaGroups = sel.size ? sel : new Set(KANA_GROUPS.map(g => g.id));
+  saveSettings();
   document.getElementById('wordSidebar').classList.remove('open');
   await loadWordQuiz();
 }
@@ -1037,58 +1475,98 @@ async function applyWordGroupFilter() {
 // KANA QUIZ
 // ============================================================
 let kanaQueue=[], kanaIdx=0, kanaRevealed=false;
-let doShuffle=true, kanaTotal=0;
+let doShuffle=true, kanaSessionRight=0, kanaSessionWrong=0;
+
+// Rebuild queue using SRS weights
+function rebuildKanaQueue() {
+  const list = buildActiveKanaList();
+  kanaQueue = buildWeightedQueue(list, false, Math.max(list.length, 20));
+  kanaIdx = 0;
+}
 
 function startKanaQuiz() {
-  kanaQueue = doShuffle ? shuffle(buildActiveKanaList()) : buildActiveKanaList();
-  kanaIdx=0; kanaTotal=0; kanaRevealed=false;
+  kanaSessionRight = 0; kanaSessionWrong = 0;
+  kanaRevealed = false;
+  rebuildKanaQueue();
   document.getElementById('screen-quiz').classList.add('active');
   loadKana();
+  updateKanaSrsPanel();
 }
 
 function loadKana() {
-  if(kanaIdx>=kanaQueue.length){
-    kanaIdx=0;
-    kanaQueue=doShuffle?shuffle(buildActiveKanaList()):buildActiveKanaList();
-  }
-  const it=kanaQueue[kanaIdx];
-  document.getElementById('kanaChar').textContent=it.k;
-  document.getElementById('kanaRomaji').textContent='';
+  if (kanaIdx >= kanaQueue.length) rebuildKanaQueue();
+  const it = kanaQueue[kanaIdx];
+  document.getElementById('kanaChar').textContent = it.k;
+  document.getElementById('kanaRomaji').textContent = '';
   document.getElementById('kanaReveal').classList.remove('revealed');
-  document.getElementById('kanaProgress').textContent=`${kanaIdx+1} / ${kanaQueue.length}`;
-  document.getElementById('kanaScore').textContent=`total: ${kanaTotal}`;
-  kanaRevealed=false;
+  document.getElementById('kanaProgress').textContent = `${kanaIdx+1} / ${kanaQueue.length}`;
+  document.getElementById('kanaScore').textContent = `✓ ${kanaSessionRight}  ✗ ${kanaSessionWrong}`;
+  kanaRevealed = false;
 }
 
-function playKanaSound(){
-  const it=kanaQueue[kanaIdx];
-  if(it) speak(it.k);
+function playKanaSound() {
+  const it = kanaQueue[kanaIdx];
+  if (it) speak(it.k);
 }
 
-function revealKana(){
-  if(kanaRevealed){nextKana();return;}
-  kanaRevealed=true;
-  const it=kanaQueue[kanaIdx];
-  document.getElementById('kanaRomaji').textContent=it.r;
+function revealKana() {
+  if (kanaRevealed) return;
+  kanaRevealed = true;
+  const it = kanaQueue[kanaIdx];
+  document.getElementById('kanaRomaji').textContent = it.r;
   document.getElementById('kanaReveal').classList.add('revealed');
-  kanaTotal++;
-  document.getElementById('kanaScore').textContent=`total: ${kanaTotal}`;
   speak(it.k);
 }
 
-function nextKana(){kanaIdx++;loadKana();}
+function answerKana(correct) {
+  if (!kanaRevealed) return;
+  const it = kanaQueue[kanaIdx];
+  recordAnswer(it.k, correct, false);
+  flashFeedback(correct);
+  if (correct) kanaSessionRight++; else kanaSessionWrong++;
+  // Rebuild queue periodically so weights take effect
+  if ((kanaIdx + 1) % 10 === 0) {
+    const list = buildActiveKanaList();
+    const rest = buildWeightedQueue(list, false, Math.max(list.length, 20));
+    kanaQueue = rest;
+    kanaIdx = -1;
+  }
+  kanaIdx++;
+  if (kanaIdx >= kanaQueue.length) rebuildKanaQueue();
+  loadKana();
+  // Update SRS panel if open
+  if (document.getElementById('srsPanelKana').classList.contains('open')) updateKanaSrsPanel();
+  // Check mastery
+  checkKanaMastery();
+}
 
-function toggleShuffle(){
-  doShuffle=!doShuffle;
-  const b=document.getElementById('btnShuffle');
-  b.textContent=`Aleatório: ${doShuffle?'ON':'OFF'}`;
-  b.className=`q-btn${doShuffle?' on':''}`;
+function checkKanaMastery() {
+  const list = buildActiveKanaList();
+  const allMastered = list.every(it => isMastered(it.k, false));
+  if (allMastered && list.length > 0) {
+    document.getElementById('masteredOverlay').classList.add('show');
+  }
+}
+function closeMastered() {
+  document.getElementById('masteredOverlay').classList.remove('show');
+}
+
+function nextKana() { kanaIdx++; if (kanaIdx >= kanaQueue.length) rebuildKanaQueue(); loadKana(); }
+function prevKana() { kanaIdx = Math.max(0, kanaIdx - 1); loadKana(); }
+
+function toggleShuffle() {
+  doShuffle = !doShuffle;
+  const b = document.getElementById('btnShuffle');
+  b.textContent = `Aleatório: ${doShuffle ? 'ON' : 'OFF'}`;
+  b.className = `q-btn${doShuffle ? ' on' : ''}`;
+  saveSettings();
 }
 
 // ============================================================
 // WORD QUIZ
 // ============================================================
 let wordQueue=[], wordIdx=0, wordRevealed=false;
+let wordSessionRight=0, wordSessionWrong=0;
 
 function setWordState(state) {
   document.getElementById('wordLoading').style.display = state === 'loading' ? 'flex' : 'none';
@@ -1097,27 +1575,42 @@ function setWordState(state) {
 }
 
 async function startWordQuiz() {
+  wordSessionRight = 0; wordSessionWrong = 0;
   document.getElementById('screen-words').classList.add('active');
   await loadWordQuiz();
 }
 
 async function loadWordQuiz() {
   setWordState('loading');
-  const words = await fetchWordsForGroups();
+  const loadingText = document.getElementById('wordLoadingText');
+  if (!jmdictData) {
+    if (loadingText) loadingText.textContent = 'Carregando dicionário… (pode demorar alguns segundos)';
+  } else {
+    if (loadingText) loadingText.textContent = 'Filtrando palavras…';
+  }
+  let words;
+  try { words = await fetchWordsForGroups(); } catch(e) { words = []; }
   if (!words.length) {
+    const msg = document.getElementById('wordEmptyMsg');
+    if (msg) msg.textContent = jmdictData ? 'Nenhuma palavra encontrada' : 'Erro ao carregar jmdict-all-3.6.2.json';
     setWordState('empty');
     document.getElementById('wordProgress').textContent = '0 / 0';
     document.getElementById('wordScore').textContent = '';
     return;
   }
-  wordQueue = shuffle(words);
+  // Build SRS-weighted queue
+  wordQueue = buildWeightedQueue(words, true, Math.max(words.length, 30));
   wordIdx = 0; wordRevealed = false;
   setWordState('ready');
   loadWord();
+  updateWordSrsPanel();
 }
 
 function loadWord() {
-  if (wordIdx >= wordQueue.length) { wordIdx = 0; wordQueue = shuffle(wordQueue); }
+  if (wordIdx >= wordQueue.length) {
+    wordQueue = buildWeightedQueue(wordQueue, true, wordQueue.length);
+    wordIdx = 0;
+  }
   const w = wordQueue[wordIdx];
   document.getElementById('wordKana').textContent = w.k;
   document.getElementById('wordReading').textContent = '';
@@ -1125,7 +1618,7 @@ function loadWord() {
   document.getElementById('wordMeaning').textContent = '';
   document.getElementById('wordInfo').classList.remove('word-revealed');
   document.getElementById('wordProgress').textContent = `${wordIdx+1} / ${wordQueue.length}`;
-  document.getElementById('wordScore').textContent = `${wordIdx+1} / ${wordQueue.length}`;
+  document.getElementById('wordScore').textContent = `✓ ${wordSessionRight}  ✗ ${wordSessionWrong}`;
   wordRevealed = false;
 }
 
@@ -1138,7 +1631,7 @@ function playWordSound() {
 }
 
 function revealWord() {
-  if (wordRevealed) { nextWord(); return; }
+  if (wordRevealed) return;
   wordRevealed = true;
   const w = wordQueue[wordIdx];
   document.getElementById('wordReading').textContent = w.k;
@@ -1148,41 +1641,103 @@ function revealWord() {
   setTimeout(() => playWordSound(), 120);
 }
 
-function nextWord() { wordIdx++; loadWord(); }
+function answerWord(correct) {
+  if (!wordRevealed) return;
+  const w = wordQueue[wordIdx];
+  recordAnswer(w.k, correct, true);
+  flashFeedback(correct);
+  if (correct) wordSessionRight++; else wordSessionWrong++;
+  if ((wordIdx + 1) % 15 === 0) {
+    const base = wordQueue.slice();
+    wordQueue = buildWeightedQueue(base, true, base.length);
+    wordIdx = -1;
+  }
+  wordIdx++;
+  if (wordIdx >= wordQueue.length) { wordIdx = 0; }
+  loadWord();
+  if (document.getElementById('srsPanelWords').classList.contains('open')) updateWordSrsPanel();
+}
 
-function closeQuiz(type){
-  if(window.speechSynthesis)speechSynthesis.cancel();
-  const id = type==='quiz' ? 'screen-quiz' : 'screen-words';
+function nextWord() { wordIdx++; if (wordIdx >= wordQueue.length) wordIdx = 0; loadWord(); }
+function prevWord() { wordIdx = Math.max(0, wordIdx - 1); loadWord(); }
+
+function closeQuiz(type) {
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  const id = type === 'quiz' ? 'screen-quiz' : 'screen-words';
   document.getElementById(id).classList.remove('active');
-  if(type==='quiz') document.getElementById('quizSidebar').classList.remove('open');
-  if(type==='words') document.getElementById('wordSidebar').classList.remove('open');
+  if (type === 'quiz') {
+    document.getElementById('quizSidebar').classList.remove('open');
+    document.getElementById('srsPanelKana').classList.remove('open');
+  }
+  if (type === 'words') {
+    document.getElementById('wordSidebar').classList.remove('open');
+    document.getElementById('srsPanelWords').classList.remove('open');
+  }
 }
 
 // ============================================================
 // KEYBOARD
 // ============================================================
-document.addEventListener('keydown', e=>{
-  const qOpen=document.getElementById('screen-quiz').classList.contains('active');
-  const wOpen=document.getElementById('screen-words').classList.contains('active');
-  if(e.key==='Escape'){if(qOpen)closeQuiz('quiz');if(wOpen)closeQuiz('words');return;}
-  if(qOpen){
-    if(e.key===' '){e.preventDefault();revealKana();}
-    if(e.key==='ArrowRight')nextKana();
-    if(e.key==='ArrowLeft'){kanaIdx=Math.max(0,kanaIdx-2);nextKana();}
-    if(e.key==='r'||e.key==='R')playKanaSound();
+document.addEventListener('keydown', e => {
+  const qOpen = document.getElementById('screen-quiz').classList.contains('active');
+  const wOpen = document.getElementById('screen-words').classList.contains('active');
+  if (e.key === 'Escape') { if (qOpen) closeQuiz('quiz'); if (wOpen) closeQuiz('words'); return; }
+  if (qOpen) {
+    if (e.key === ' ') { e.preventDefault(); revealKana(); }
+    if (e.key === '1') answerKana(false);
+    if (e.key === '2') answerKana(true);
+    if (e.key === 'ArrowRight') nextKana();
+    if (e.key === 'ArrowLeft') prevKana();
+    if (e.key === 'r' || e.key === 'R') playKanaSound();
   }
-  if(wOpen){
-    if(e.key===' '){e.preventDefault();revealWord();}
-    if(e.key==='ArrowRight')nextWord();
-    if(e.key==='ArrowLeft'){wordIdx=Math.max(0,wordIdx-2);nextWord();}
-    if(e.key==='r'||e.key==='R')playWordSound();
+  if (wOpen) {
+    if (e.key === ' ') { e.preventDefault(); revealWord(); }
+    if (e.key === '1') answerWord(false);
+    if (e.key === '2') answerWord(true);
+    if (e.key === 'ArrowRight') nextWord();
+    if (e.key === 'ArrowLeft') prevWord();
+    if (e.key === 'r' || e.key === 'R') playWordSound();
   }
 });
 
 // ============================================================
+// RESET PROGRESS
+// ============================================================
+function showResetConfirm(type) {
+  document.getElementById(type === 'kana' ? 'kResetConfirm' : 'wResetConfirm').classList.add('show');
+}
+function hideResetConfirm(type) {
+  document.getElementById(type === 'kana' ? 'kResetConfirm' : 'wResetConfirm').classList.remove('show');
+}
+function confirmReset(type) {
+  if (type === 'kana') {
+    srsData = {};
+    saveSRS();
+    kanaSessionRight = 0; kanaSessionWrong = 0;
+    rebuildKanaQueue(); loadKana();
+    updateKanaSrsPanel();
+  } else {
+    srsWordData = {};
+    saveSRSWords();
+    wordSessionRight = 0; wordSessionWrong = 0;
+    if (wordQueue.length) { wordIdx = 0; loadWord(); }
+    updateWordSrsPanel();
+  }
+  hideResetConfirm(type);
+}
+
+// ============================================================
 // INIT
 // ============================================================
+loadSRS();
+loadSettings();
 renderTable();
+// Sync shuffle button state after settings load
+(function() {
+  const b = document.getElementById('btnShuffle');
+  b.textContent = `Aleatório: ${doShuffle ? 'ON' : 'OFF'}`;
+  b.className = `q-btn${doShuffle ? ' on' : ''}`;
+})();
 </script>
 </body>
 </html>
